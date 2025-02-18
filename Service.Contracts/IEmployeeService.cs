@@ -1,7 +1,10 @@
-﻿namespace Service.Contracts
+﻿using Shared.DataTransferObjects;
+
+namespace Service.Contracts
 {
     public interface IEmployeeService
     {
-
+        IEnumerable<EmployeeDto> GetEmployeesByCompany(Guid companyId, bool trackChanges);
+        EmployeeDto GetEmployeeByIdAndCompanyId(Guid companyId, Guid employeeId, bool trackChanges);
     }
 }
