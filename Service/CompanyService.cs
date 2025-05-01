@@ -27,7 +27,22 @@ namespace Service
                 .GetAllCompanies(trackChanges);
 
             var companyDto = _mapper.Map<IEnumerable<CompanyDto>>(companies);
+            return companyDto;
+        }
 
+        public IEnumerable<CompanyDto> GetCompaniesById(IEnumerable<Guid> ids, bool trackChanges)
+        {
+            if (ids == null)
+                throw new IdParametersBadRequestException();
+
+            var companies = _repository
+                .CompanyRepository
+                .GetCompaniesById(ids, trackChanges);
+
+            if (companies.Count() != ids.Count())
+                throw new CollectionByIdsBadRequestException();
+
+            var companyDto = _mapper.Map<IEnumerable<CompanyDto>>(companies);
             return companyDto;
         }
 
@@ -37,7 +52,6 @@ namespace Service
                 ?? throw new CompanyNotFoundException(companyId);
             
             var companyDto = _mapper.Map<CompanyDto>(company);
-            
             return companyDto;
         }
 
@@ -49,8 +63,25 @@ namespace Service
             _repository.Save();
 
             var companyToReturn = _mapper.Map<CompanyDto>(companyEntity);
-
             return companyToReturn;
+        }
+
+        public (IEnumerable<CompanyDto> companies, string ids) CreateCompanyCollection(IEnumerable<CompanyForCreationDto> companies)
+        {
+            if (companies == null)
+                throw new CompanyCollectionBadRequestException();
+
+            var companyEntities = _mapper.Map<IEnumerable<Company>>(companies);
+            foreach (var entity in companyEntities)
+            {
+                _repository.CompanyRepository.CreateCompany(entity);
+            }
+
+            _repository.Save();
+
+            var companyCollectionToReturn = _mapper.Map<IEnumerable<CompanyDto>>(companyEntities);
+            var ids = string.Join(",", companyCollectionToReturn.Select(x => x.Id));
+            return (companies: companyCollectionToReturn, ids: ids);
         }
     }
 }

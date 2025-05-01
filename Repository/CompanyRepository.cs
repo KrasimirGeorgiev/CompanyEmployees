@@ -19,6 +19,10 @@ namespace Repository
                 .OrderBy(c => c.Name)
                 .ToList();
 
+        public IEnumerable<Company> GetCompaniesById(IEnumerable<Guid> ids, bool trackChanges) =>
+            FindByCondition(x => ids.Contains(x.Id), trackChanges)
+            .ToList();
+
         public Company GetCompany(Guid companyId, bool trackChanges) =>
             FindByCondition(x => x.Id.Equals(companyId), trackChanges)
             .SingleOrDefault();
