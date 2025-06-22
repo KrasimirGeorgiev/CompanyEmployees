@@ -37,9 +37,9 @@ namespace Service
 
         EmployeeDto IEmployeeService.GetEmployeeByIdAndCompanyId(Guid companyId, Guid employeeId, bool trackChanges)
         {
-            var company = _repository.CompanyRepository.GetCompany(companyId, trackChanges) 
+            var company = _repository.CompanyRepository.GetCompany(companyId, trackChanges)
                 ?? throw new CompanyNotFoundException(companyId);
-            var employee = _repository.EmployeeRepository.GetEmployeeByIdAndCompanyId(companyId, employeeId, trackChanges) 
+            var employee = _repository.EmployeeRepository.GetEmployeeByIdAndCompanyId(companyId, employeeId, trackChanges)
                 ?? throw new EmployeeNotFoundException(employeeId);
 
             var employeeDto = _mapper.Map<EmployeeDto>(employee);
@@ -58,6 +58,20 @@ namespace Service
 
             var employeeToReturn = _mapper.Map<EmployeeDto>(employeeEntity);
             return employeeToReturn;
+        }
+
+        public void DeleteEmployeeForCompany(Guid companyId, Guid id, bool trackChanges)
+        {
+            var company = _repository.CompanyRepository.GetCompany(companyId, trackChanges);
+            if (company is null)
+                throw new CompanyNotFoundException(companyId);
+
+            var employee = _repository.EmployeeRepository.GetEmployeeByIdAndCompanyId(companyId, id, trackChanges);
+            if (employee is null)
+                throw new EmployeeNotFoundException(id);
+
+            _repository.EmployeeRepository.DeleteEmployee(employee);
+            _repository.Save();
         }
     }
 }
