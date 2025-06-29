@@ -83,5 +83,25 @@ namespace Service
             var ids = string.Join(",", companyCollectionToReturn.Select(x => x.Id));
             return (companies: companyCollectionToReturn, ids: ids);
         }
+
+        public void DeleteCompany(Guid companyId, bool trackChanges)
+        {
+            var company = _repository.CompanyRepository.GetCompany(companyId, trackChanges);
+            if (company == null)
+                throw new CompanyNotFoundException(companyId);
+
+            _repository.CompanyRepository.DeleteCompany(company);
+            _repository.Save();
+        }
+
+        public void UpdateCompany(Guid companyId, CompanyForUpdateDto companyForUpdate, bool trackChanges)
+        {
+            var companyEntity = _repository.CompanyRepository.GetCompany(companyId, trackChanges);
+            if (companyEntity == null)
+                throw new CompanyNotFoundException(companyId);
+
+            _mapper.Map(companyForUpdate, companyEntity);
+            _repository.Save();
+        }
     }
 }
