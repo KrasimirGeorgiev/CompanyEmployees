@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.JsonPatch;
+using Microsoft.AspNetCore.Mvc;
 using Service.Contracts;
 using Shared.DataTransferObjects;
 
@@ -34,11 +35,16 @@ namespace CompanyEmployees.Presentation.Controllers
             if (employee == null)
                 return BadRequest("Employee for creation object is null.");
 
+            if (!ModelState.IsValid)
+            {
+                return UnprocessableEntity(ModelState);
+            }
+
             var employeeToReturn = _service.EmployeeService.CreateEmployeeForCompany(companyId, employee, trackChanges: false);
 
             return CreatedAtRoute("GetEmployeeForCompany", new { companyId, employeeId = employeeToReturn.Id }, employeeToReturn);
         }
-
+        
         [HttpPut("{id:guid}")]
         public IActionResult UpdateEmployeeForCompany(Guid companyId, Guid id, [FromBody]EmployeeForUpdateDto employee)
         {
@@ -46,6 +52,19 @@ namespace CompanyEmployees.Presentation.Controllers
                 return BadRequest($"{nameof(EmployeeForUpdateDto)} object is null");
 
             _service.EmployeeService.UpdateEmployeeForCompany(companyId, id, employee, compTrackChanges: false, employeeTrackChanges: true);
+
+            return NoContent();
+        }
+
+        [HttpPatch("{id:guid}")]
+        public IActionResult PatchEmployeeForCompany(Guid companyId, Guid id, [FromBody]JsonPatchDocument<EmployeeForUpdateDto> patchDoc)
+        {
+            if (patchDoc == null)
+                return BadRequest("Patch document is null");
+
+            var result = _service.EmployeeService.GetEmployeeForPatch(companyId, id, compTrackChanges: false, employeeTrackChanges: true);
+            patchDoc.ApplyTo(result.employeeToPatch);
+            _service.EmployeeService.SaveChangesForPath(result.employeeToPatch, result.empoyeeEntity);
 
             return NoContent();
         }
