@@ -16,7 +16,7 @@ namespace CompanyEmployees.Presentation.Controllers
         }
 
         [HttpGet]
-        public IActionResult Get(Guid companyId) 
+        public IActionResult Get(Guid companyId)
         {
             var employees = _service.EmployeeService.GetEmployeesByCompany(companyId, trackChanges: false);
             return Ok(employees);
@@ -30,7 +30,7 @@ namespace CompanyEmployees.Presentation.Controllers
         }
 
         [HttpPost]
-        public IActionResult CreateAnEmployeeForCompany(Guid companyId, [FromBody]EmployeeForCreationDto employee)
+        public IActionResult CreateAnEmployeeForCompany(Guid companyId, [FromBody] EmployeeForCreationDto employee)
         {
             if (employee == null)
                 return BadRequest("Employee for creation object is null.");
@@ -44,12 +44,15 @@ namespace CompanyEmployees.Presentation.Controllers
 
             return CreatedAtRoute("GetEmployeeForCompany", new { companyId, employeeId = employeeToReturn.Id }, employeeToReturn);
         }
-        
+
         [HttpPut("{id:guid}")]
-        public IActionResult UpdateEmployeeForCompany(Guid companyId, Guid id, [FromBody]EmployeeForUpdateDto employee)
+        public IActionResult UpdateEmployeeForCompany(Guid companyId, Guid id, [FromBody] EmployeeForUpdateDto employee)
         {
             if (employee == null)
                 return BadRequest($"{nameof(EmployeeForUpdateDto)} object is null");
+
+            if (!ModelState.IsValid)
+                return UnprocessableEntity(ModelState);
 
             _service.EmployeeService.UpdateEmployeeForCompany(companyId, id, employee, compTrackChanges: false, employeeTrackChanges: true);
 
@@ -57,20 +60,26 @@ namespace CompanyEmployees.Presentation.Controllers
         }
 
         [HttpPatch("{id:guid}")]
-        public IActionResult PatchEmployeeForCompany(Guid companyId, Guid id, [FromBody]JsonPatchDocument<EmployeeForUpdateDto> patchDoc)
+        public IActionResult PatchEmployeeForCompany(Guid companyId, Guid id, [FromBody] JsonPatchDocument<EmployeeForUpdateDto> patchDoc)
         {
             if (patchDoc == null)
                 return BadRequest("Patch document is null");
 
             var result = _service.EmployeeService.GetEmployeeForPatch(companyId, id, compTrackChanges: false, employeeTrackChanges: true);
-            patchDoc.ApplyTo(result.employeeToPatch);
+            patchDoc.ApplyTo(result.employeeToPatch, ModelState);
+
+            TryValidateModel(result.employeeToPatch);
+
+            if (!ModelState.IsValid)
+                return UnprocessableEntity(ModelState);
+
             _service.EmployeeService.SaveChangesForPath(result.employeeToPatch, result.empoyeeEntity);
 
             return NoContent();
         }
 
         [HttpDelete("{id:guid}")]
-        public IActionResult Delete(Guid companyId, Guid id) 
+        public IActionResult Delete(Guid companyId, Guid id)
         {
             _service.EmployeeService.DeleteEmployeeForCompany(companyId, id, false);
 
