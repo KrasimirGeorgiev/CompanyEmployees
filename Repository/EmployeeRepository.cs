@@ -1,10 +1,6 @@
 ﻿using Contracts;
 using Entities.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 namespace Repository
 {
@@ -15,23 +11,23 @@ namespace Repository
         {
         }
 
-        public IEnumerable<Employee> GetAllEmployees(bool trackChanges) =>
-            FindAll(trackChanges)
+        public async Task<IEnumerable<Employee>> GetAllEmployees(bool trackChanges) =>
+            await FindAll(trackChanges)
             .OrderBy(x => x.Name)
-            .ToList();
+            .ToListAsync();
 
-        public IEnumerable<Employee> GetEmployeesByCompany(Guid companyId, bool trackChanges) =>
-            FindByCondition(x => x.CompanyId == companyId, trackChanges)
+        public async Task<IEnumerable<Employee>> GetEmployeesByCompany(Guid companyId, bool trackChanges) =>
+            await FindByCondition(x => x.CompanyId == companyId, trackChanges)
             .OrderBy(x => x.Name)
-            .ToList();
+            .ToListAsync();
 
-        public Employee GetEmployee(Guid employeeId, bool trackChanges) =>
-          FindByCondition(x => x.Id == employeeId, trackChanges)
-            .SingleOrDefault();
+        public async Task<Employee> GetEmployee(Guid employeeId, bool trackChanges) =>
+          await FindByCondition(x => x.Id == employeeId, trackChanges)
+            .SingleOrDefaultAsync();
 
-        public Employee GetEmployeeByIdAndCompanyId(Guid companyId, Guid employeeId, bool trackChanges) =>
-            FindByCondition(x => x.CompanyId.Equals(companyId) && x.Id.Equals(employeeId), trackChanges)
-            .SingleOrDefault();
+        public async Task<Employee> GetEmployeeByIdAndCompanyId(Guid companyId, Guid employeeId, bool trackChanges) =>
+            await FindByCondition(x => x.CompanyId.Equals(companyId) && x.Id.Equals(employeeId), trackChanges)
+            .SingleOrDefaultAsync();
 
         public void CreateEmployeeForCompany(Guid companyId, Employee employee)
         {
@@ -39,7 +35,6 @@ namespace Repository
             Create(employee);
         }
 
-        public void DeleteEmployee(Employee employee)
-            => Delete(employee);
+        public void DeleteEmployee(Employee employee) => Delete(employee);
     }
 }

@@ -1,10 +1,6 @@
 ﻿using Contracts;
 using Entities.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 namespace Repository
 {
@@ -14,18 +10,18 @@ namespace Repository
         {
         }
 
-        public IEnumerable<Company> GetAllCompanies(bool trackChanges) =>
-            FindAll(trackChanges)
+        public async Task<IEnumerable<Company>> GetAllCompanies(bool trackChanges) =>
+            await FindAll(trackChanges)
                 .OrderBy(c => c.Name)
-                .ToList();
+                .ToListAsync();
 
-        public IEnumerable<Company> GetCompaniesById(IEnumerable<Guid> ids, bool trackChanges) =>
-            FindByCondition(x => ids.Contains(x.Id), trackChanges)
-            .ToList();
+        public async Task<IEnumerable<Company>> GetCompaniesById(IEnumerable<Guid> ids, bool trackChanges) =>
+            await FindByCondition(x => ids.Contains(x.Id), trackChanges)
+            .ToListAsync();
 
-        public Company GetCompany(Guid companyId, bool trackChanges) =>
-            FindByCondition(x => x.Id.Equals(companyId), trackChanges)
-            .SingleOrDefault();
+        public async Task<Company> GetCompany(Guid companyId, bool trackChanges) =>
+            await FindByCondition(x => x.Id.Equals(companyId), trackChanges)
+            .SingleOrDefaultAsync();
 
         public void CreateCompany(Company company) => Create(company);
 

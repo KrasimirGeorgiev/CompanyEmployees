@@ -18,9 +18,9 @@ namespace CompanyEmployees.Presentation.Controllers
         }
 
         [HttpGet]
-        public IActionResult GetCompanies()
+        public async Task<IActionResult> GetCompanies()
         {
-            var companies = _service
+            var companies = await _service
                 .CompanyService
                 .GetAllCompanies(trackChanges: false);
 
@@ -28,22 +28,22 @@ namespace CompanyEmployees.Presentation.Controllers
         }
 
         [HttpGet("collection/({ids})", Name = "CompanyCollection")]
-        public IActionResult GetCompanyCollection([ModelBinder(BinderType = typeof(ArrayModelBinder))]
+        public async Task<IActionResult> GetCompanyCollection([ModelBinder(BinderType = typeof(ArrayModelBinder))]
             IEnumerable<Guid> ids)
         {
-            var companies = _service.CompanyService.GetCompaniesById(ids, trackChanges: false);
+            var companies = await _service.CompanyService.GetCompaniesById(ids, trackChanges: false);
             return Ok(companies);
         }
 
         [HttpGet("{id:guid}", Name = "CompanyById")]
-        public IActionResult GetCompany(Guid id)
+        public async Task<IActionResult> GetCompany(Guid id)
         {
-            var company = _service.CompanyService.GetCompany(id, trackChanges: false);
+            var company = await _service.CompanyService.GetCompany(id, trackChanges: false);
             return Ok(company);
         }
 
         [HttpPost]
-        public IActionResult CreateCompany([FromBody] CompanyForCreationDto company)
+        public async Task<IActionResult> CreateCompany([FromBody] CompanyForCreationDto company)
         {
             if (company is null)
                 return BadRequest("CompanyDto object is null");
@@ -51,18 +51,18 @@ namespace CompanyEmployees.Presentation.Controllers
             if (!ModelState.IsValid)
                 return UnprocessableEntity(ModelState);
 
-            var createdCompany = _service.CompanyService.CreateCompany(company);
+            var createdCompany = await _service.CompanyService.CreateCompany(company);
 
             return CreatedAtRoute("CompanyById", new { id = createdCompany.Id, }, createdCompany);
         }
 
         [HttpPut("{id:guid}")]
-        public IActionResult UpdateCompany(Guid id, [FromBody] CompanyForUpdateDto company)
+        public async Task<IActionResult> UpdateCompany(Guid id, [FromBody] CompanyForUpdateDto company)
         {
             if (company is null)
                 return BadRequest($"{nameof(CompanyForUpdateDto)} object is null");
 
-            _service.CompanyService.UpdateCompany(id, company, trackChanges: true);
+            await _service.CompanyService.UpdateCompany(id, company, trackChanges: true);
 
             return NoContent();
         }
@@ -70,7 +70,7 @@ namespace CompanyEmployees.Presentation.Controllers
             
 
         [HttpPost("collection")]
-        public IActionResult CreateCompanyCollection([FromBody] IEnumerable<CompanyForCreationDto> companies)
+        public async Task<IActionResult> CreateCompanyCollection([FromBody] IEnumerable<CompanyForCreationDto> companies)
         {
             if(companies is null || !companies.Any())
                 return BadRequest("Company collection is null or empty");
@@ -78,14 +78,14 @@ namespace CompanyEmployees.Presentation.Controllers
             if (!ModelState.IsValid)
                 return UnprocessableEntity(ModelState);
 
-            var result = _service.CompanyService.CreateCompanyCollection(companies);
+            var result = await _service.CompanyService.CreateCompanyCollection(companies);
 
             return CreatedAtRoute("CompanyCollection", new { result.ids }, result.companies);
         }
         [HttpDelete("{id:guid}")]
-        public IActionResult DeleteCompany(Guid id)
+        public async Task<IActionResult> DeleteCompany(Guid id)
         {
-            _service.CompanyService.DeleteCompany(id, trackChanges: false);
+            await _service.CompanyService.DeleteCompany(id, trackChanges: false);
             return NoContent();
         }
     }
